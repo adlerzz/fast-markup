@@ -1,5 +1,5 @@
 import { Node, Unit } from "../types/models";
-import { isString, unitToNode } from "../utils";
+import { isArray, isString, unitToNode } from "../utils";
 type HTMLNode = globalThis.Node;
 
 type InsertionMode = "firstChild" | "lastChild";
@@ -10,10 +10,10 @@ function render(node: Node): HTMLNode {
     if(!pointer){
         return document.createTextNode(node.text);
     }
-    const element = document.createElement(pointer.tag ?? "div");
+    const element = document.createElement(pointer.tag);
     pointer.id && (element.id = pointer.id);
-    element.className = pointer.classes.join(" ");
-    pointer.props.forEach( ([prop, value]) => (element as any)[prop] = value);
+    pointer.classes?.length && (element.className = pointer.classes.join(" "));
+    pointer.props.forEach( ([prop, value]) => (element as any)[prop] = JSON.parse(value));
 
     node.text && (element.textContent = node.text);
     node.children.forEach(child => element.appendChild(render(child)));
@@ -49,5 +49,20 @@ export function insert(element: HTMLElement, container: HTMLNode = document.body
             return;
         }
     }
+}
+
+export function substitute(into: HTMLElement, sources: Record<string, HTMLElement| HTMLElement[]>): void {
+    Object.entries(sources).forEach( ([id, input]: [String, HTMLElement|HTMLElement[]]) => {
+        const place = into.querySelector(`template#${id}`);
+        if(!place){
+            throw new Error(`no template with id "${id}"`);
+        }
+        if(isArray(input)){
+            input.forEach(element => place.insertAdjacentElement("beforebegin", element));
+        } else {
+            place.insertAdjacentElement('beforebegin', input);
+        }
+        place.remove();
+    })
 }
 

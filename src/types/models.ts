@@ -7,9 +7,9 @@ export interface Unit {
 }
 
 export interface Pointer {
-    tag?: string;
+    tag: string;
     classes: Array<string>;
-    props: Array<[string, unknown]>;
+    props: Array<[string, string]>;
     id?: string;
 }
 

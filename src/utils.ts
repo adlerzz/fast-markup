@@ -20,23 +20,12 @@ export function splitAs(text: string, template: RegExp): string[] {
     return [...(text ?? "").matchAll(template)]?.map(([,it]) => it);
 }
 
-
-/*export function parsePointer(pointer: string|null): Pointer {
-    if (!pointer) {
-        throw new TypeError("empty pointer");
-    }
-    const [ , tag, sClasses, sProps, sId] = [...pointer?.match(/([^\.#[]*)([^[#]*)?(\[.*\])?(#.*)?/) ?? []];
-    const classes = splitAs(sClasses, /\.([^.]+)/g);
-    const props = splitAs(sProps, /\[(.*?)\]/g).map(prop => prop.split("=") as [string, string]);
-    const id = sId?.slice(1);
-    return {tag, classes, props, id} as Pointer;
-}*/
-
 function parseDescriptor(desc: string): Pointer {
     if (!desc) {
         throw new TypeError("empty descriptor");
     }
-    const [ , tag, sClasses, sProps, sId] = [...desc?.match(/([^\.#[]*)([^[#]*)?(\[.*\])?(#.*)?/) ?? []];
+    const [ , sTag, sClasses, sProps, sId] = [...desc?.match(/([^\.#[]*)([^[#]*)?(\[.*\])?(#.*)?/) ?? []];
+    const tag = sTag?.length ? sTag : "div";
     const classes = splitAs(sClasses, /\.([^.]+)/g);
     const props = splitAs(sProps, /\[(.*?)\]/g).map(prop => prop.split("=") as [string, string]);
     const id = sId?.slice(1);

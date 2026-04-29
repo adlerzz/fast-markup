@@ -13,21 +13,12 @@
     function splitAs(text, template) {
         return [...(text ?? "").matchAll(template)]?.map(([, it]) => it);
     }
-    /*export function parsePointer(pointer: string|null): Pointer {
-        if (!pointer) {
-            throw new TypeError("empty pointer");
-        }
-        const [ , tag, sClasses, sProps, sId] = [...pointer?.match(/([^\.#[]*)([^[#]*)?(\[.*\])?(#.*)?/) ?? []];
-        const classes = splitAs(sClasses, /\.([^.]+)/g);
-        const props = splitAs(sProps, /\[(.*?)\]/g).map(prop => prop.split("=") as [string, string]);
-        const id = sId?.slice(1);
-        return {tag, classes, props, id} as Pointer;
-    }*/
     function parseDescriptor(desc) {
         if (!desc) {
             throw new TypeError("empty descriptor");
         }
-        const [, tag, sClasses, sProps, sId] = [...desc?.match(/([^\.#[]*)([^[#]*)?(\[.*\])?(#.*)?/) ?? []];
+        const [, sTag, sClasses, sProps, sId] = [...desc?.match(/([^\.#[]*)([^[#]*)?(\[.*\])?(#.*)?/) ?? []];
+        const tag = sTag?.length ? sTag : "div";
         const classes = splitAs(sClasses, /\.([^.]+)/g);
         const props = splitAs(sProps, /\[(.*?)\]/g).map(prop => prop.split("="));
         const id = sId?.slice(1);
@@ -57,10 +48,10 @@
         if (!pointer) {
             return document.createTextNode(node.text);
         }
-        const element = document.createElement(pointer.tag ?? "div");
+        const element = document.createElement(pointer.tag);
         pointer.id && (element.id = pointer.id);
-        element.className = pointer.classes.join(" ");
-        pointer.props.forEach(([prop, value]) => element[prop] = value);
+        pointer.classes?.length && (element.className = pointer.classes.join(" "));
+        pointer.props.forEach(([prop, value]) => element[prop] = JSON.parse(value));
         node.text && (element.textContent = node.text);
         node.children.forEach(child => element.appendChild(render(child)));
         return element;
@@ -92,6 +83,21 @@
                 return;
             }
         }
+    }
+    function substitute(into, sources) {
+        Object.entries(sources).forEach(([id, input]) => {
+            const place = into.querySelector(`template#${id}`);
+            if (!place) {
+                throw new Error(`no template with id "${id}"`);
+            }
+            if (isArray(input)) {
+                input.forEach(element => place.insertAdjacentElement("beforebegin", element));
+            }
+            else {
+                place.insertAdjacentElement('beforebegin', input);
+            }
+            place.remove();
+        });
     }
 
     const INDENT = "    ";
@@ -139,6 +145,7 @@
         fm.on = on;
         fm.remove = remove;
         fm.insert = insert;
+        fm.substitute = substitute;
         return fmFn(arg1);
     };
 
