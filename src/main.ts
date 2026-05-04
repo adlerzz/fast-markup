@@ -4,11 +4,15 @@ import { style } from "./functions/style.function";
 import { on } from "./functions/on.function";
 
 globalThis.fm = function (arg1) {
-    fm.style = style;
-    fm.on = on;
-    fm.remove = remove;
-    fm.insert = insert;
-    fm.substitute = substitute;
+    Object.assign( fm, {
+        style, 
+        on, 
+        remove, 
+        insert, 
+        substitute
+    });
+    
     return fmFn(arg1);
 }
 
+globalThis.fm();

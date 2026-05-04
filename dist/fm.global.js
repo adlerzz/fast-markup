@@ -57,6 +57,9 @@
         return element;
     }
     function fmFn(arg1) {
+        if (arg1 === undefined) {
+            return;
+        }
         if (isString(arg1)) {
             if (arg1.charAt(0) === "*") {
                 return [...document.querySelectorAll(arg1.slice(1))].map(el => el);
@@ -102,20 +105,20 @@
 
     const INDENT = "    ";
     function stringifyStyle(obj, level = 0) {
-        const [[selector, node]] = Object.entries(obj);
         const indent = INDENT.repeat(level);
-        if (!(isObject(node))) {
-            return "";
-        }
-        const entries = Object.entries(node).map(([prop, value]) => {
-            switch (true) {
-                case isString(value): return `${INDENT}${indent}${prop}: ${value};`;
-                case isObject(value): return stringifyStyle({ [prop]: value }, level + 1);
-                default: return "";
+        return [...Object.entries(obj)].map(([selector, node]) => {
+            if (!(isObject(node))) {
+                return "";
             }
-        });
-        const result = `${indent}${selector} {\n` + entries.join('\n') + `\n${indent}}`;
-        return result;
+            const entries = Object.entries(node).map(([prop, value]) => {
+                switch (true) {
+                    case isString(value): return `${INDENT}${indent}${prop}: ${value};`;
+                    case isObject(value): return stringifyStyle({ [prop]: value }, level + 1);
+                    default: return "";
+                }
+            });
+            return `${indent}${selector} {\n` + entries.join("\n") + `\n${indent}}`;
+        }).join("\n");
     }
     function style(input) {
         const styleElement = document.createElement('style');
@@ -141,12 +144,15 @@
 
     // @ts-nocheck
     globalThis.fm = function (arg1) {
-        fm.style = style;
-        fm.on = on;
-        fm.remove = remove;
-        fm.insert = insert;
-        fm.substitute = substitute;
+        Object.assign(fm, {
+            style,
+            on,
+            remove,
+            insert,
+            substitute
+        });
         return fmFn(arg1);
     };
+    globalThis.fm();
 
 })();

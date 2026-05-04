@@ -22,7 +22,10 @@ function render(node: Node): HTMLNode {
 }
 export function fmFn(selector: string): HTMLElement | HTMLElement[];
 export function fmFn(unit: Unit): HTMLElement;
-export function fmFn(arg1: Unit | string): HTMLElement | HTMLElement[] {
+export function fmFn(arg1: Unit | string | undefined): HTMLElement | HTMLElement[] | void {
+    if(arg1 === undefined){
+        return;
+    }
     if(isString(arg1)){
         if(arg1.charAt(0) === "*"){
             return [...document.querySelectorAll(arg1.slice(1))].map(el => el as HTMLElement);

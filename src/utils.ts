@@ -12,10 +12,6 @@ export function isObject(x: unknown): x is Record<string, unknown> {
     return x !== null && typeof x === "object";
 }
 
-export function uuid(): string { 
-    return crypto.randomUUID();
-}
-
 export function splitAs(text: string, template: RegExp): string[] {
     return [...(text ?? "").matchAll(template)]?.map(([,it]) => it);
 }
